@@ -1,17 +1,25 @@
 from rest_framework import serializers
-from users.models import UserModel
+from users.models import UserModel,RoleGroup
 from django.utils.encoding import smart_str, force_bytes, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from ..utils.email.send import Util
 
+class RoleGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RoleGroup
+        fields = '__all__'
+class UserListSerializer(serializers.ModelSerializer):
+  class Meta:
+    model = UserModel
+    fields = ['id','name','email','role_group','mobile','gender','address']
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
   # We are writing this becoz we need confirm password field in our Registratin Request
   password2 = serializers.CharField(style={'input_type':'password'}, write_only=True)
   class Meta:
     model = UserModel
-    fields = ['email', 'password','password2','role_group','mobile','gender','address']
+    fields = ['name','email', 'password','password2','role_group','mobile','gender','address']
     extra_kwargs={
       'password':{'write_only':True}
     }
@@ -33,7 +41,14 @@ class UserLoginSerializer(serializers.ModelSerializer):
   class Meta:
     model = UserModel
     fields = ['email', 'password']
-
+  def validate(self, attrs):
+      email = attrs.get('email')
+      password = attrs.get('password')
+      if not email:
+        raise serializers.ValidationError("Email Field Required")
+      if not password:
+        raise serializers.ValidationError("Password Field Required")
+      return attrs
 
 
 class UserProfileSerializer(serializers.ModelSerializer):

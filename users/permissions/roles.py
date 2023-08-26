@@ -25,4 +25,17 @@ class IsStudentCoordinator(permissions.BasePermission):
         return False
 
 
- 
+
+
+# New Permissions
+
+class CanAddUsers(permissions.BasePermission):
+    # Chairperson/ Vice Chair/ Placement Manager / (HPC) / APC
+    def has_permission(self,request,view):
+        users_can_create =  ["Chairperson","Vice Chair","Placement Manager","HPC","APC"]
+        for user_role in users_can_create:
+            if request.user.role_group.role == user_role:
+                return True
+        # if not in list
+        return False
+        

@@ -5,9 +5,13 @@ from django.utils import timezone
 
 
 
-class CompanyTag(models.Model):
+class CompanyHiringTag(models.Model):
     name = models.CharField(max_length=255, unique=True)
+    def __str__(self):
+        return self.name
 
+class CompanyJobTag(models.Model):
+    name = models.CharField(max_length=255, unique=True)
     def __str__(self):
         return self.name
 
@@ -22,6 +26,7 @@ class HRDetails(models.Model):
 
 class Company(models.Model):
     name = models.CharField(max_length=255)
+    about = models.TextField(default="NA",null=True,blank=True)
     assigned_coordinators = models.ManyToManyField(UserModel, related_name='assigned_companies')
     salary = models.DecimalField(max_digits=10, decimal_places=2)
     importance = models.IntegerField()
@@ -30,7 +35,8 @@ class Company(models.Model):
     job_location = models.CharField(max_length=300  )
     hr_details = models.ManyToManyField(HRDetails, related_name='companies')
     blacklist = models.BooleanField(default=False)
-    tags = models.ManyToManyField(CompanyTag, related_name='related_tags')
+    job_tags = models.ManyToManyField(CompanyJobTag, related_name='job_tags')
+    hiring_tags = models.ManyToManyField(CompanyHiringTag, related_name='hiring_tags')
     status = models.BooleanField(default=False)
 
     def __str__(self):
@@ -42,7 +48,7 @@ class Comment(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='comments')
     user = models.ForeignKey(UserModel, on_delete=models.CASCADE)
     text = models.TextField()
-    reply_to = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies')
+    reply_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='replies')
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return "text: "+self.text+" /to: "+str(self.company)+" /by: "+str(self.user)
